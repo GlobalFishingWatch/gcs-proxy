@@ -16,6 +16,8 @@ import googleapi
 def load_file(path):
     if path.startswith("gs://"):
         path = path[len("gs://"):]
+    if path.startswith("/"):
+        path = path[1:]
     bucket_name, object_name = path.split("/", 1)
     req = googleapi.storage.objects().get_media(
         bucket=bucket_name,
@@ -44,7 +46,7 @@ class ProxyHandler(CORSHandler):
     @memcaching.cached(use_cached=True)
     def get(self, path):
         self.response.headers['Content-Type'] = load_file_metadata(path)['contentType'].encode('utf-8')
-        self.response.write(load_file_metadata(path))
+        self.response.write(load_file(path))
 
 app = webapp2.WSGIApplication([
     webapp2.Route('/proxy<path:.*>', handler=ProxyHandler, name='proxy')
