@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <title>GCS Proxy</title>
+  </head>
+  <body>
+    <h1>{{ pagetitle }}</h1>
+    <p>App Version: {{ appversion }}</p>
+
+    <h2>Pages</h2>
+    <ul>
+      {% if allowed_users %}<li><a href="/admin/users">Users</a></li>{% endif %}
+      {% if allowed_groups %}<li><a href="/admin/groups">Groups</a></li>{% endif %}
+      {% if allowed_access %}<li><a href="/admin/access">Access</a></li>{% endif %}
+    </ul>
+    {% if allowed_admin %}
+      <h2>Config</h2>
+      <table>
+         {% for row in env %}
+              <tr><th align="right">{{ row['key'] }}</th><td>{{ row['value'] }}</td></tr>
+         {% endfor %}
+      </table>
+    {% endif %}
+  </body>
+</html>
+{% endautoescape %}

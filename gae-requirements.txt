@@ -1,0 +1,10 @@
+google-api-python-client==1.2
+httplib2==0.9
+python-dateutil==2.2
+python-geohash==0.8.5
+six==1.6.1
+wsgiref==0.1.2
+vectortile==1.3.2
+kmltrack
+python-slugify
+git+https://github.com/d33tah/bpgsql.git

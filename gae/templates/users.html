@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <title>Users</title>
+    <style>
+      table {
+        border-spacing: 2pt;
+      }
+      table tr:nth-child(even) {
+        background-color: #eee;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><a href="/admin">Admin</a> &gt; Users</h1>
+
+    <form method="POST">
+      <button type="submit">Save</button>
+      <table>
+        <tr>
+          <th>e-mail</th>
+          {% for g in groups %}
+            <th> {{g}}</th>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td><input type="text" name="new__email"></td>
+          {% for g in users.groups %}
+            <td><input type="checkbox" name="new__groups_{{g}}"></td>
+          {% endfor %}
+        </tr>
+
+        {% for u in users %}
+          <tr>
+            <td title="{% if 'info' in u %}Surname: {{u['info']['surname']}}
+  Given name: {{u['info']['given_name']}}
+  Organization: {{u['info']['organization']}}
+  Phone: {{u['info']['phone']}}
+
+  {{u['info']['motivation']}}
+  {% endif %}">
+              {{u['email']}}
+              <input name="{{u['slug']}}__email" type="hidden" value="{{u['email']}}">
+            </td>
+            {% for g in groups %}
+              <td><input name="{{u['slug']}}__groups_{{g}}" type="checkbox" {% if g in u['groups'] %}checked="checked"{% endif %}></td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </table>
+    </form>
+
+  </body>
+</html>
+{% endautoescape %}

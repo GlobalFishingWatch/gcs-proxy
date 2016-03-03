@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <title>Groups</title>
+    <style>
+      table {
+        border-spacing: 2pt;
+      }
+      table tr:nth-child(even) {
+        background-color: #eee;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><a href="/admin">Admin</a> &gt; Groups</h1>
+
+    <form method="POST">
+      <div>
+        Name: <input type="text" name="new__name">
+        <input type="submit" name="new__add" value="Add">
+      </div>
+
+      {% for name in groups|sort %}
+        <div>
+          {{name}}
+          <input type="submit" name="{{name}}__delete" value="Delete">
+          <input type="hidden" name="{{name}}__name" value="{{name}}">
+        </div>
+      {% endfor %}
+    </form>
+
+  </body>
+</html>
+{% endautoescape %}

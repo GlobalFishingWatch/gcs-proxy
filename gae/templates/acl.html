@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <title>Access</title>
+    <style>
+      table {
+        border-spacing: 2pt;
+      }
+      table tr:nth-child(even) {
+        background-color: #eee;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><a href="/admin">Admin</a> &gt; Access</h1>
+
+    Notes:
+    <ul>
+      <li>Paths are unix-style, that is gs://bucket/some/directory becomes /bucket/some/directory</li>
+      <li>The longest prefix match by a list item on a path is used to grant or deny access</li>
+    </ul>
+
+    <form method="POST">
+      {% for group in access|dictsort %}
+        <h2>{{group[0]}}</h2>
+
+        <div>
+          <input type="hidden" name="{{group[0]}}__new__group" value="{{group[0]}}">
+          Allow: <input type="checkbox" name="{{group[0]}}__new__access" checked="checked">
+          Path: <input type="text" name="{{group[0]}}__new__path">
+          <input type="submit" name="{{group[0]}}__new__add" value="Add">
+        </div>
+
+        {% for item in group[1] %}
+          <div>
+            {% if item.access %}Allow{% else %}Deny{% endif %}
+            {{item.path}}
+            <input type="submit" name="{{group[0]}}__{{item.path|replace("/", "_")}}__delete" value="Delete">
+            <input type="hidden" name="{{group[0]}}__{{item.path|replace("/", "_")}}__group" value="{{group[0]}}">
+            <input type="hidden" name="{{group[0]}}__{{item.path|replace("/", "_")}}__path" value="{{item.path}}">
+          </div>
+        {% endfor %}
+      {% endfor %}
+    </form>
+
+  </body>
+</html>
+{% endautoescape %}
