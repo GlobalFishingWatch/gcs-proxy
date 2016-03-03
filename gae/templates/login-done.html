@@ -1,0 +1,10 @@
+<html>
+  <head>
+    <script>
+      window.opener.popup_auth_done(window.name, {% if success %}true{% else %}false{% endif %});
+      window.close();
+    </script>
+  </head>
+  <body>
+  </body>
+</html>

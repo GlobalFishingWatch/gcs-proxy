@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <script>
+      var popup_login_url = "{{popup_login_url}}";
+      var redirect_login_url = "{{redirect_login_url}}";
+      var continue_url = "{{continue_url}}";
+
+      if(window === top) {
+        window.location = redirect_login_url;
+      } else {
+        window.open(popup_login_url, 'pelagos-auth', 'directories=0,titlebar=0,toolbar=0,location=0,status=0,menubar=0,scrollbars=no,resizable=no,width=400,height=350');
+
+        window.popup_auth_done = function () {
+          window.location = continue_url;
+        }
+      }
+    </script>
+  </head>
+  <body>
+  </body>
+</html>

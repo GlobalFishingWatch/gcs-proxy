@@ -110,7 +110,7 @@ def is_member(user, *group_names):
         return membership
     if user.is_admin:
         return True
-    return None
+    return None    
 
 def make_member(user, *group_names):
     for group_name in group_names:
@@ -126,10 +126,14 @@ def remove_memberships(user):
     for membership in memberships:
         membership.key.delete()
 
-def list_groups():
-    names = [group.name for group in Group.query()]
-    names.sort()
-    return names
+def list_groups(user = None):
+    if user is None or user.is_admin:
+        names = [group.name for group in Group.query()]
+        names.sort()
+        return names
+    else:
+        nomalized_email = user.email.lower()
+        return [member.group for member in Member.query(Member.email == nomalized_email)]
 
 def make_group(name, info = {}):
     group = Group(
@@ -169,8 +173,8 @@ def list_users(*group_names):
     users.sort(lambda a, b: cmp(a['email'], b['email']))
     return users;
 
-def list_access():
-    acls = {group: [] for group in list_groups()}
+def list_access(user=None):
+    acls = {group: [] for group in list_groups(user)}
 
     for access in Access.query():
         if access.group not in acls:
@@ -194,16 +198,17 @@ def unset_access(group, path):
     for access in accesses:
         access.key.delete()
 
-def require(*groups, **options):
+
+def require_base(is_allowed, redirect=True, **options):
     def wrap(fn):
         def wrapper(self, *arg, **kw):
             user = get_current_user(self.request)
             if user:
-                if wrapper.is_allowed(user):
+                if is_allowed(self, user, *arg, **kw):
                     fn(self, *arg, **kw)
                 else:
                     logging.warning('Authentication failure: %s' % (user.email.lower()))
-                    if options.get('redirect', True):
+                    if redirect:
                         self.redirect('/auth/restricted?continue=' + urllib.quote_plus(self.request.url))
                     else:
                         self.response.status = "403 Not authorized"
@@ -211,7 +216,7 @@ def require(*groups, **options):
                             "auth_location": '/auth/restricted?continue=/auth/login/done'
                         }))
             else:
-                if options.get('redirect', True):
+                if redirect:
                     self.redirect('/auth/login?continue=' + urllib.quote_plus(self.request.url))
                 else:
                     self.response.status = "403 Not authenticated"
@@ -219,13 +224,29 @@ def require(*groups, **options):
                         "auth_location": popup_login_url(self.request)
                     }))
             set_auth(self.response, user)
-        def is_allowed(user):
-            if not groups:
-                return True
-            return is_member(user, *groups)
-        wrapper.is_allowed = is_allowed
         return wrapper
     return wrap
+
+def require_path_acess(path_arg="path", **options):
+    def is_allowed(self, user, *arg, **kw):
+        for group, acls in list_access(user).iteritems():
+            for aclitem in reversed(acls):
+                if kw[path_arg].startswith(aclitem.path):
+                    if aclitem.access:
+                        return True
+                    else:
+                        break
+        return False
+    return require_base(is_allowed, **options)
+
+
+def require(*groups, **options):
+    def is_allowed(self, user, *arg, **kw):
+        if not groups:
+            return True
+        return is_member(user, *groups)
+    return require_base(is_allowed, **options)
+
 
 class LogoutHandler(webapp2.RequestHandler):
     def get(self):
@@ -239,13 +260,12 @@ class RestrictedHandler(webapp2.RequestHandler):
         login_url = '/auth/login?continue=' + self.request.get('continue', '/')
         logout_url = '/auth/logout?continue=' + urllib.quote_plus(login_url)
         self.response.write(
-            JINJA_ENVIRONMENT.get_template('views/restricted/restricted.html').render(
+            JINJA_ENVIRONMENT.get_template('templates/restricted.html').render(
                 {"login_url": login_url,
                  "logout_url": logout_url,
                  "user": user,
                  "contact_url": config.CONTACT_URL,
-                 "google_analytics_code": config.GOOGLE_ANALYTICS_CODE,
-                 "page_title": 'Global Fishing Watch - Unauthorized Access'}))
+                 "page_title": 'GCS Proxy - Unauthorized Access'}))
 
 def popup_login_url(request):
     return 'http://' + os.environ['HTTP_HOST'] + '/auth/login/google?continue=/auth/login/done'
@@ -256,7 +276,7 @@ def redirect_login_url(request):
 class LoginHandler(webapp2.RequestHandler):
     def get(self):
         self.response.write(
-            JINJA_ENVIRONMENT.get_template('views/login.html').render(
+            JINJA_ENVIRONMENT.get_template('templates/login.html').render(
                 {"popup_login_url": popup_login_url(self.request),
                  "redirect_login_url": redirect_login_url(self.request),
                  "continue_url": self.request.get('continue', '/')}))
@@ -264,7 +284,7 @@ class LoginHandler(webapp2.RequestHandler):
 class LoginDoneHandler(webapp2.RequestHandler):
     def get(self):
         self.response.write(
-            JINJA_ENVIRONMENT.get_template('views/login-done.html').render(
+            JINJA_ENVIRONMENT.get_template('templates/login-done.html').render(
                 {'success': get_current_user(self.request) is not None}))
 
 class LoginGoogleHandler(webapp2.RequestHandler):

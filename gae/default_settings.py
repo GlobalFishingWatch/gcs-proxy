@@ -32,3 +32,5 @@ try:
         SERVER_SECRET = f.read().strip()
 except Exception, e:
     pass
+
+CONTACT_URL=''
