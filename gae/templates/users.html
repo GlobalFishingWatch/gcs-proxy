@@ -46,6 +46,9 @@
             {% for g in groups %}
               <td><input name="{{u['slug']}}__groups_{{g}}" type="checkbox" {% if g in u['groups'] %}checked="checked"{% endif %}></td>
             {% endfor %}
+            <td>
+              Cookie: <input type="text" value="{{u['cookie']}}">
+            </td>
           </tr>
         {% endfor %}
       </table>

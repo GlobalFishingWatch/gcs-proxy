@@ -162,8 +162,15 @@ def list_users(*group_names):
             users[membership.email] = []
         users[membership.email].append(membership.group)
     users = [{'slug': slugify.slugify(key, separator="_"),
-            'email': key,
-            'groups': value}
+              'email': key,
+              'cookie': 'pelagos-auth="%s"' % User(nickname = 'test',
+                             email = key,
+                             user_id = slugify.slugify(key, separator="_"),
+                             federated_identity = None,
+                             federated_provider = None,
+                             is_admin = False
+                             ).serialize().replace('"', '\\"'),
+              'groups': value}
            for key, value in users.iteritems()]
     for membership in users:
         membership['groups'].sort()
