@@ -11,6 +11,7 @@ import memcaching
 import config
 import io
 import apiclient.http
+import apiclient.errors
 import googleapi
 
 def load_file(path):
@@ -45,8 +46,11 @@ class ProxyHandler(CORSHandler):
     @authentication.require_path_acess()
     @memcaching.cached(use_cached=True)
     def get(self, path):
-        self.response.headers['Content-Type'] = load_file_metadata(path)['contentType'].encode('utf-8')
-        self.response.write(load_file(path))
+        try:
+            self.response.headers['Content-Type'] = load_file_metadata(path)['contentType'].encode('utf-8')
+            self.reponse.write(load_file(path))
+        except apiclient.errors.HttpError, e:
+            self.abort(e.resp.status, detail=str(e))
 
 app = webapp2.WSGIApplication([
     webapp2.Route('/proxy<path:.*>', handler=ProxyHandler, name='proxy')
