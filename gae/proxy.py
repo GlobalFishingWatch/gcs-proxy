@@ -43,12 +43,12 @@ def load_file_metadata(path):
     return req.execute()
 
 class ProxyHandler(CORSHandler):
-    @authentication.require_path_acess()
+    @authentication.require_path_acess(redirect = False)
     @memcaching.cached(use_cached=True)
     def get(self, path):
         try:
             self.response.headers['Content-Type'] = load_file_metadata(path)['contentType'].encode('utf-8')
-            self.reponse.write(load_file(path))
+            self.response.write(load_file(path))
         except apiclient.errors.HttpError, e:
             self.abort(e.resp.status, detail=str(e))
 
