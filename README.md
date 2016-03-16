@@ -26,3 +26,11 @@ be either Allow or Deny.
 A file path to proxy is granted if, among all ACL entry paths that are
 prefixes to this path, the longest one has its flag set to Allow, in
 any group that the user is a member of.
+
+## Administration
+
+The administration user interface, where users, groups and ACLs can be configured, is accessible from
+
+    http://sever.com/admin
+
+To access it, you have to be an administrator of the google project of the GAE instance that GCS-proxy is running on.
